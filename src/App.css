@@ -1,0 +1,46 @@
+.main-container{
+  /* background: rgb(194, 81, 81); */
+  margin: 50px auto;
+}
+
+.topbar-container{
+  background-color: #333;
+  color: #fff;
+}
+ul.topbar-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  padding: 0 20px;
+}
+
+ul.topbar-list .move-right{
+  margin-left: auto;
+  color: red;
+}
+ul .topbar-list-item{
+  margin: 0 2px;
+}
+ul.topbar-list-item{
+  margin-left: auto;
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+.topbar-icon{
+  cursor: pointer;
+  padding: 0 3px;
+}
+
+.gamearea-container{
+  width: 100%;
+  height: 100%;
+}
+/* canvas.gameboard{
+  background-color: #91c471;
+} */
