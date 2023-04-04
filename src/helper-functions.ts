@@ -51,10 +51,23 @@ const arrayLengthEqual = (arr1: any[], arr2: any[]): boolean => {
     return arr1.length === arr2.length ? true : false;
 }
 
+/**
+ * 
+ * Matches object at level 1. No nested object.
+ */
+const findEqualObjectInArray = (arr1: Record<string,any>[], matchObject: Record<string, any>): boolean => {
+    for (const obj of arr1) {
+        if (objectEqual(obj, matchObject))
+            return true;
+    }
+    return false;
+}
+
 
 export default {
     objectEqual,
-    arrayLengthEqual
+    arrayLengthEqual,
+    findEqualObjectInArray
 }
 
 

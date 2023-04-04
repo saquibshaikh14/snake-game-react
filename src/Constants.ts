@@ -1,6 +1,6 @@
-export const WIDTH = 512;
+export const WIDTH = 512; /*384 */;
 export const HEIGHT = 384;
-export const BLOCK_SIZE = 32;
+export const BLOCK_SIZE = 64;
 
 export const BOARD_BACKGROUND_COLOR = "#006060";
 export const GRID_LINE_COLOR = "#007979";
