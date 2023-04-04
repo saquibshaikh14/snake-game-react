@@ -13,12 +13,14 @@ import {
 } from '../Constants';
 
 
-const COL = (WIDTH / BLOCK_SIZE) -1;
-const ROW = (HEIGHT / BLOCK_SIZE) -1;
+const COL = (WIDTH / BLOCK_SIZE) - 1;
+const ROW = (HEIGHT / BLOCK_SIZE) - 1;
 
 console.log(COL, ROW, (WIDTH / BLOCK_SIZE))
 const INIT_POSX = 0;
 const INIT_POSY = 0;
+
+var DIRECTION_BUFFER: string[] = [];
 
 // Math.max(Math.floor(COL / 2) - 1, 0)
 // Math.floor(ROW / 2)
@@ -39,9 +41,9 @@ export default function GameArea() {
 
   const [snakePos, setSnakePos] = useState<PositionCoordinate[]>([{ posX: INIT_POSX, posY: INIT_POSY }, { posX: INIT_POSX + 1, posY: INIT_POSY }, { posX: INIT_POSX + 2, posY: INIT_POSY }]);
   const [snakeLength, setSnakeLength] = useState(3);
-  const [snakeSpeed, setSnakeSpeed] = useState(2);
+  const [snakeSpeed, setSnakeSpeed] = useState(1);
   const [snakeMoveDirection, setSnakeMoveDirection] = useState('ArrowLeft');
-  const [foodPos, setFoodPos] = useState<PositionCoordinate|null>(null);
+  const [foodPos, setFoodPos] = useState<PositionCoordinate | null>(null);
   const [cellTrack, updateCellTrack] = useState<Record<string, { posX: number; posY: number, occupied: boolean }>>({});
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -123,7 +125,7 @@ export default function GameArea() {
     // let _cellTrack = { ...cellTrack };
 
     //get snake head
-    const snakeHead = snakePos[0] || {posX: 0, posY: 0};
+    const snakeHead = snakePos[0] || { posX: 0, posY: 0 };
 
 
     //draw head
@@ -136,10 +138,10 @@ export default function GameArea() {
       let { posX = 0, posY = 0 } = snakePos[i] || {};
 
       //check if snakeHead colliding with Body
-      if(snakeHead.posX == posX && snakeHead.posY == posY){
+      if (snakeHead.posX == posX && snakeHead.posY == posY) {
         //collision
         context.fillStyle = "red";
-        context.fillRect((posX *   BLOCK_SIZE) + 1, (posY * BLOCK_SIZE) + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+        context.fillRect((posX * BLOCK_SIZE) + 1, (posY * BLOCK_SIZE) + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
         setGamePlay(false);
         alert("Game over, snake hits it's body");
@@ -147,7 +149,7 @@ export default function GameArea() {
         break; //remove and let draw full snake boody, handle game end 
       }
 
-      context.fillRect((posX *   BLOCK_SIZE) + 1, (posY * BLOCK_SIZE) + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+      context.fillRect((posX * BLOCK_SIZE) + 1, (posY * BLOCK_SIZE) + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
     }
 
   }, [snakePos]);
@@ -185,7 +187,9 @@ export default function GameArea() {
     };
 
     let newSnakeHead: PositionCoordinate;
-    switch (snakeMoveDirection) {
+    let latestLegalMoveDirection: string = DIRECTION_BUFFER.length?DIRECTION_BUFFER.pop()!:snakeMoveDirection;
+    
+    switch (latestLegalMoveDirection) {
       case 'ArrowDown':
         newSnakeHead = {
           posX: currentSnakeHead.posX,
@@ -218,14 +222,16 @@ export default function GameArea() {
         break;
     }
 
+
+
     //cell track
     let _cellTrack = { ...cellTrack };
 
-      // let snakeTail = _snakePos.pop() as PositionCoordinate; //reomve tail
-      // clearCanvasArea(snakeTail.posX, snakeTail.posY, BLOCK_SIZE, BLOCK_SIZE);
+    // let snakeTail = _snakePos.pop() as PositionCoordinate; //reomve tail
+    // clearCanvasArea(snakeTail.posX, snakeTail.posY, BLOCK_SIZE, BLOCK_SIZE);
 
-      //[vacate]: update cell track
-      // _cellTrack["C" + snakeTail.posX + "R" + snakeTail.posY] = { ...snakeTail, occupied: false }
+    //[vacate]: update cell track
+    // _cellTrack["C" + snakeTail.posX + "R" + snakeTail.posY] = { ...snakeTail, occupied: false }
 
     if (!helper.objectEqual(foodPos as PositionCoordinate, newSnakeHead)) {
       let snakeTail = _snakePos.pop() as PositionCoordinate; //reomve tail
@@ -237,7 +243,7 @@ export default function GameArea() {
     } else {
       //create new foodPos
       let newfPos = generateFoodPos(_cellTrack);
-      console.log("equal -> food touched", { foodPos, newSnakeHead, newfPos, snakePos, _cellTrack, cellTrack})
+      console.log("equal -> food touched", { foodPos, newSnakeHead, newfPos, snakePos, _cellTrack, cellTrack })
       setFoodPos(/*generateFoodPos(_cellTrack)*/newfPos);
     }
 
@@ -254,6 +260,11 @@ export default function GameArea() {
     _snakePos.unshift(newSnakeHead);
 
     updateCellTrack(_cellTrack); //updating new vacate and occupied list
+
+    //update snake move direction
+    setSnakeMoveDirection(latestLegalMoveDirection);
+    //clear buffer
+    DIRECTION_BUFFER = [];
     setSnakePos(_snakePos);
   }
 
@@ -281,22 +292,26 @@ export default function GameArea() {
     switch (event.key) {
       case 'ArrowDown':
         if (snakeMoveDirection !== 'ArrowUp') {
-          setSnakeMoveDirection('ArrowDown');
+          // setSnakeMoveDirection('ArrowDown');
+          DIRECTION_BUFFER.push('ArrowDown')
         }
         break;
       case 'ArrowLeft':
         if (snakeMoveDirection !== 'ArrowRight') {
-          setSnakeMoveDirection('ArrowLeft');
+          // setSnakeMoveDirection('ArrowLeft');
+          DIRECTION_BUFFER.push('ArrowLeft')
         }
         break;
       case 'ArrowUp':
         if (snakeMoveDirection !== 'ArrowDown') {
-          setSnakeMoveDirection('ArrowUp');
+          // setSnakeMoveDirection('ArrowUp');
+          DIRECTION_BUFFER.push('ArrowUp')
         }
         break;
       case 'ArrowRight':
         if (snakeMoveDirection !== 'ArrowLeft') {
-          setSnakeMoveDirection('ArrowRight');
+          // setSnakeMoveDirection('ArrowRight');
+          DIRECTION_BUFFER.push('ArrowRight')
         }
         break;
       default:
@@ -315,3 +330,6 @@ export default function GameArea() {
     </div>
   )
 }
+
+
+//TODO: update cell tracking, food shouldn't render on snake body
