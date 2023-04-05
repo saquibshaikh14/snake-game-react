@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { RiPauseCircleLine, RiPauseLine, RiPlayLine, RiRestartLine } from 'react-icons/ri'
+import { TopbarProps } from '../types';
 
-export default function Topbar() {
+export default function Topbar(props:TopbarProps) {
 
-  const [gamePlay, setGamePlay] = useState(false);
+  const {score, gameState, updateGameState} = props;
 
 
   const setGameState = useCallback((event: React.SyntheticEvent) => {
@@ -17,28 +18,28 @@ export default function Topbar() {
 
       var isPlay = iconClicked?.getAttribute("data-gamestate") === 'true' ? true : false;
 
-      if (isPlay && !gamePlay) setGamePlay(isPlay)
-      if (!isPlay && gamePlay) setGamePlay(isPlay)
+      if (isPlay && !gameState) updateGameState(isPlay)
+      if (!isPlay && gameState) updateGameState(isPlay)
 
     }
     if (iconClicked?.getAttribute("name") === "resetGame") {
       //reset other thing
-      setGamePlay(false);
+      updateGameState(false);
     }
 
-  }, [gamePlay]);
+  }, [gameState]);
 
 
   return (
     <div className="topbar-container">
       <ul className="topbar-list">
         <li className="topbar-list-item scoreboard">
-          Score: <span className="score-text">1000</span>
+          Score: <span className="score-text">{score}</span>
         </li>
         <ul className="topbar-list-item push-right" onClick={setGameState}>
           <li className="topbar-list-item">
             {
-              !gamePlay ?
+              !gameState ?
                 <RiPlayLine name='setGameState' data-gamestate="true"
                   className='topbar-icon'
                 />

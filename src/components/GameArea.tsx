@@ -11,12 +11,12 @@ import {
   GRID_LINE_COLOR,
   SNAKE_FOOD_COLOR
 } from '../Constants';
+import { GameAreaProps } from "../types";
 
 
 const COL = (WIDTH / BLOCK_SIZE) - 1;
 const ROW = (HEIGHT / BLOCK_SIZE) - 1;
 
-console.log(COL, ROW, (WIDTH / BLOCK_SIZE))
 const INIT_POSX = 0;
 const INIT_POSY = 0;
 
@@ -35,12 +35,13 @@ interface PositionCoordinate {
 }
 
 
-export default function GameArea() {
+export default function GameArea(props: GameAreaProps) {
 
-  const [gamePlay, setGamePlay] = useState(false);
+  const {score, gameState, updateScore, updateGameState} = props;
+
+  //const [gamePlay, setGamePlay] = useState(false);
 
   const [snakePos, setSnakePos] = useState<PositionCoordinate[]>([{ posX: INIT_POSX, posY: INIT_POSY }, { posX: INIT_POSX + 1, posY: INIT_POSY }, { posX: INIT_POSX + 2, posY: INIT_POSY }]);
-  const [snakeLength, setSnakeLength] = useState(3);
   const [snakeSpeed, setSnakeSpeed] = useState(1);
   const [snakeMoveDirection, setSnakeMoveDirection] = useState('ArrowLeft');
   const [foodPos, setFoodPos] = useState<PositionCoordinate | null>(null);
@@ -143,8 +144,8 @@ export default function GameArea() {
         context.fillStyle = "red";
         context.fillRect((posX * BLOCK_SIZE) + 1, (posY * BLOCK_SIZE) + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-        setGamePlay(false);
-        alert("Game over, snake hits it's body");
+        updateGameState(false);
+        alert("Game over, snake hits it's body. Score: " + score);
 
         break; //remove and let draw full snake boody, handle game end 
       }
@@ -164,7 +165,7 @@ export default function GameArea() {
 
   useEffect(() => {
     let timer: number | null = null;
-    if (!gamePlay) {
+    if (!gameState) {
       // timer && clearInterval(timer); //clear timer if any
       // timer = null; //remove timerid
       return;
@@ -176,7 +177,7 @@ export default function GameArea() {
 
     return () => { timer && clearInterval(timer) } //cleanup clear timer if any
 
-  }, [gamePlay, snakeMoveDirection, snakePos])
+  }, [gameState, snakeMoveDirection, snakePos])
 
   const moveSnake = (): void => {
     let _snakePos = [...snakePos];
@@ -245,6 +246,9 @@ export default function GameArea() {
       let newfPos = generateFoodPos(_cellTrack);
       console.log("equal -> food touched", { foodPos, newSnakeHead, newfPos, snakePos, _cellTrack, cellTrack })
       setFoodPos(/*generateFoodPos(_cellTrack)*/newfPos);
+
+      //update score
+      updateScore(score+1);
     }
 
     //set new head to other end of the canvas if it reaches edge
@@ -318,7 +322,7 @@ export default function GameArea() {
         break;
     }
 
-    !gamePlay && setGamePlay(true); //change game state to playing. once key is pressed
+    !gameState && updateGameState(true); //change game state to playing. once key is pressed
   }
 
   return (
@@ -332,4 +336,3 @@ export default function GameArea() {
 }
 
 
-//TODO: update cell tracking, food shouldn't render on snake body

@@ -1,7 +1,7 @@
-import './App.css'
+import './App.css';
 
 //Page import
-import SnakeBoard from './pages/SnakeBoard'
+import SnakeBoard from './pages/SnakeBoard';
 
 function App() {
 
