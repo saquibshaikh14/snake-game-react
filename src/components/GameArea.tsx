@@ -48,6 +48,7 @@ export default function GameArea(props: GameAreaProps) {
   const [cellTrack, updateCellTrack] = useState<Record<string, { posX: number; posY: number, occupied: boolean }>>({});
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const timerRef = useRef<number | null>(null);
 
   //draw grid
   useEffect(() => {
@@ -164,18 +165,17 @@ export default function GameArea(props: GameAreaProps) {
   }, [snakeMoveDirection])
 
   useEffect(() => {
-    let timer: number | null = null;
     if (!gameState) {
       // timer && clearInterval(timer); //clear timer if any
       // timer = null; //remove timerid
       return;
     }
 
-    timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       moveSnake();
     }, 1000 / snakeSpeed);
 
-    return () => { timer && clearInterval(timer) } //cleanup clear timer if any
+    return () => { timerRef && clearInterval(timerRef.current!) } //cleanup clear timer if any
 
   }, [gameState, snakeMoveDirection, snakePos])
 
