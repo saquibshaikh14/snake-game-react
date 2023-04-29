@@ -10,3 +10,8 @@ export interface GameAreaProps {
     gameState: boolean;
     updateGameState: (state: boolean) => void
 }
+
+export interface PositionCoordinate {
+    posX: number;
+    posY: number;
+  }

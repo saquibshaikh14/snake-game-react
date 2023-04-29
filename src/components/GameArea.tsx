@@ -11,41 +11,29 @@ import {
   GRID_LINE_COLOR,
   SNAKE_FOOD_COLOR
 } from '../Constants';
-import { GameAreaProps } from "../types";
+import { GameAreaProps, PositionCoordinate } from "../types";
 
 
 const COL = (WIDTH / BLOCK_SIZE) - 1;
 const ROW = (HEIGHT / BLOCK_SIZE) - 1;
 
-const INIT_POSX = 0;
-const INIT_POSY = 0;
+const INIT_POSX = Math.max(0, COL / 2 << 0);
+const INIT_POSY = Math.max(0, ROW / 2 << 0);
 
 var DIRECTION_BUFFER: string[] = [];
 
-// Math.max(Math.floor(COL / 2) - 1, 0)
-// Math.floor(ROW / 2)
 
-function getRandomPos(limit: number) {
-  return Math.floor(Math.random() * (limit + 1));
-}
-
-interface PositionCoordinate {
-  posX: number;
-  posY: number;
-}
 
 
 export default function GameArea(props: GameAreaProps) {
 
-  const {score, gameState, updateScore, updateGameState} = props;
-
-  //const [gamePlay, setGamePlay] = useState(false);
+  const { score, gameState, updateScore, updateGameState } = props;
 
   const [snakePos, setSnakePos] = useState<PositionCoordinate[]>([{ posX: INIT_POSX, posY: INIT_POSY }, { posX: INIT_POSX + 1, posY: INIT_POSY }, { posX: INIT_POSX + 2, posY: INIT_POSY }]);
-  const [snakeSpeed, setSnakeSpeed] = useState(1);
+  const [snakeSpeed, setSnakeSpeed] = useState(3.2);
   const [snakeMoveDirection, setSnakeMoveDirection] = useState('ArrowLeft');
   const [foodPos, setFoodPos] = useState<PositionCoordinate | null>(null);
-  const [cellTrack, updateCellTrack] = useState<Record<string, { posX: number; posY: number, occupied: boolean }>>({});
+  const [cellTrack, updateCellTrack] = useState<Record<string, { posX: number; posY: number }>>({});
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const timerRef = useRef<number | null>(null);
@@ -80,15 +68,16 @@ export default function GameArea(props: GameAreaProps) {
     }
 
     //keep record of each cell. start is 0 and end is (col,row) -1;
-    const _cellTrack: Record<string, { posX: number; posY: number, occupied: boolean }> = {}
+    const _cellTrack: Record<string, { posX: number; posY: number }> = {}
     for (let col = 0; col <= COL; col++) {
       for (let row = 0; row <= ROW; row++) {
-        _cellTrack["C" + col + "R" + row] = { posX: col, posY: row, occupied: false };
+        _cellTrack["C" + col + "R" + row] = { posX: col, posY: row };
       }
     }
     //change occupied status of snakePos coordinates
     for (const cord of snakePos) {
-      _cellTrack["C" + cord.posX + "R" + cord.posY] = { ...cord, occupied: true }
+
+      delete _cellTrack["C" + cord.posX + "R" + cord.posY];
     }
     updateCellTrack(_cellTrack);
 
@@ -123,9 +112,6 @@ export default function GameArea(props: GameAreaProps) {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    //keep track of occupied block [to get food position]
-    // let _cellTrack = { ...cellTrack };
-
     //get snake head
     const snakeHead = snakePos[0] || { posX: 0, posY: 0 };
 
@@ -147,8 +133,8 @@ export default function GameArea(props: GameAreaProps) {
 
         updateGameState(false);
         alert("Game over, snake hits it's body. Score: " + score);
-
-        break; //remove and let draw full snake boody, handle game end 
+        return;
+        //remove and let draw full snake boody, handle game end 
       }
 
       context.fillRect((posX * BLOCK_SIZE) + 1, (posY * BLOCK_SIZE) + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
@@ -166,8 +152,6 @@ export default function GameArea(props: GameAreaProps) {
 
   useEffect(() => {
     if (!gameState) {
-      // timer && clearInterval(timer); //clear timer if any
-      // timer = null; //remove timerid
       return;
     }
 
@@ -188,8 +172,8 @@ export default function GameArea(props: GameAreaProps) {
     };
 
     let newSnakeHead: PositionCoordinate;
-    let latestLegalMoveDirection: string = DIRECTION_BUFFER.length?DIRECTION_BUFFER.pop()!:snakeMoveDirection;
-    
+    let latestLegalMoveDirection: string = DIRECTION_BUFFER.length ? DIRECTION_BUFFER.pop()! : snakeMoveDirection;
+
     switch (latestLegalMoveDirection) {
       case 'ArrowDown':
         newSnakeHead = {
@@ -228,18 +212,24 @@ export default function GameArea(props: GameAreaProps) {
     //cell track
     let _cellTrack = { ...cellTrack };
 
-    // let snakeTail = _snakePos.pop() as PositionCoordinate; //reomve tail
-    // clearCanvasArea(snakeTail.posX, snakeTail.posY, BLOCK_SIZE, BLOCK_SIZE);
+    //set new head to other end of the canvas if it reaches edge
+    if (newSnakeHead.posX < 0) newSnakeHead.posX = COL;
+    else if (newSnakeHead.posX > COL) newSnakeHead.posX = 0;
 
-    //[vacate]: update cell track
-    // _cellTrack["C" + snakeTail.posX + "R" + snakeTail.posY] = { ...snakeTail, occupied: false }
+    if (newSnakeHead.posY < 0) newSnakeHead.posY = ROW;
+    else if (newSnakeHead.posY > ROW) newSnakeHead.posY = 0;
+
+    //delete occupied block from tracking
+    delete _cellTrack["C" + newSnakeHead.posX + "R" + newSnakeHead.posY];
+
+    _snakePos.unshift(newSnakeHead); //add new head to snake(copy)
 
     if (!helper.objectEqual(foodPos as PositionCoordinate, newSnakeHead)) {
       let snakeTail = _snakePos.pop() as PositionCoordinate; //reomve tail
       clearCanvasArea(snakeTail.posX, snakeTail.posY, BLOCK_SIZE, BLOCK_SIZE);
 
       //[vacate]: update cell track
-      _cellTrack["C" + snakeTail.posX + "R" + snakeTail.posY] = { ...snakeTail, occupied: false }
+      _cellTrack["C" + snakeTail.posX + "R" + snakeTail.posY] = { ...snakeTail }
 
     } else {
       //create new foodPos
@@ -248,28 +238,17 @@ export default function GameArea(props: GameAreaProps) {
       setFoodPos(/*generateFoodPos(_cellTrack)*/newfPos);
 
       //update score
-      updateScore(score+1);
+      updateScore(score + 1);
     }
 
-    //set new head to other end of the canvas if it reaches edge
-    if (newSnakeHead.posX < 0) newSnakeHead.posX = COL;
-    else if (newSnakeHead.posX > COL) newSnakeHead.posX = 0;
-
-    if (newSnakeHead.posY < 0) newSnakeHead.posY = ROW;
-    else if (newSnakeHead.posY > ROW) newSnakeHead.posY = 0;
-
-    //[occupied]: update cell track
-    _cellTrack["C" + newSnakeHead.posX + "R" + newSnakeHead.posY] = { ...newSnakeHead, occupied: true }
-
-    _snakePos.unshift(newSnakeHead);
-
-    updateCellTrack(_cellTrack); //updating new vacate and occupied list
 
     //update snake move direction
     setSnakeMoveDirection(latestLegalMoveDirection);
     //clear buffer
     DIRECTION_BUFFER = [];
-    setSnakePos(_snakePos);
+    setSnakePos(_snakePos); //update new snake position
+    updateCellTrack(_cellTrack); //updating new vacate and occupied list
+
   }
 
 
@@ -285,7 +264,7 @@ export default function GameArea(props: GameAreaProps) {
     context.clearRect(posX * blockSize + 1, posY * blockSize + 1, width - 2, height - 2);
   }
 
-  function generateFoodPos(_cellTrack: Record<string, { posX: number; posY: number; occupied: boolean; }>) {
+  function generateFoodPos(_cellTrack: Record<string, { posX: number; posY: number; }>) {
 
     let keys = Object.keys(_cellTrack);
     let emptyCell = _cellTrack[keys[keys.length * Math.random() << 0]]
