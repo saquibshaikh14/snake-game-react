@@ -20,7 +20,7 @@ Table of Contents
 Demo
 ----
 
-[Live Demo](https://saquibshaikh14.github.io/snake-game-react-ts/)
+[Live Demo](https://saquibshaikh14.github.io/snake-game-react/)
 
 Features
 --------
