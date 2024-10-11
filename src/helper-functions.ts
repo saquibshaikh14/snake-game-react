@@ -63,11 +63,15 @@ const findEqualObjectInArray = (arr1: Record<string,any>[], matchObject: Record<
     return false;
 }
 
+const checkForMobileDevice = () => {
+    return /Mobi|Android/i.test(navigator.userAgent);
+  };
 
 export default {
     objectEqual,
     arrayLengthEqual,
-    findEqualObjectInArray
+    findEqualObjectInArray,
+    checkForMobileDevice
 }
 
 

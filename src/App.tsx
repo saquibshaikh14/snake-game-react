@@ -4,7 +4,6 @@ import './App.css';
 import SnakeBoard from './pages/SnakeBoard';
 
 function App() {
-
   return (
     <SnakeBoard/>
   )

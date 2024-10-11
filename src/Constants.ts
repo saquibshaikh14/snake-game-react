@@ -1,4 +1,8 @@
-export const WIDTH = 500; /*384 */;
+import helperFunctions from "./helper-functions";
+
+const isMobile = helperFunctions.checkForMobileDevice();
+
+export const WIDTH = isMobile ? 375 : 500;;
 export const HEIGHT = 375;
 export const BLOCK_SIZE = 25;
 

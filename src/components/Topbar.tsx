@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { RiPauseCircleLine, RiPauseLine, RiPlayLine, RiRestartLine } from 'react-icons/ri'
+import React, { useCallback } from 'react';
+import { RiPauseCircleLine, RiPlayLine, RiRestartLine } from 'react-icons/ri'
 import { TopbarProps } from '../types';
 
 export default function Topbar(props:TopbarProps) {

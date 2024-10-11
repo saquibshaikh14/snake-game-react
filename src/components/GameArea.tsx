@@ -37,6 +37,8 @@ export default function GameArea(props: GameAreaProps) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const timerRef = useRef<number | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const animationTimeRef = useRef<number>(0);
 
   //draw grid
   useEffect(() => {
@@ -148,18 +150,29 @@ export default function GameArea(props: GameAreaProps) {
     return () => {
       document.removeEventListener("keydown", _setSnakeMoveDirection)
     }
-  }, [snakeMoveDirection])
+  }, [gameState, snakeMoveDirection])
 
   useEffect(() => {
     if (!gameState) {
       return;
     }
 
-    timerRef.current = setInterval(() => {
-      moveSnake();
-    }, 1000 / snakeSpeed);
+    const animate = (DOMHighResTimeStamp: number) => {
+      if((DOMHighResTimeStamp - animationTimeRef.current) > snakeSpeed*100){
+        animationTimeRef.current = DOMHighResTimeStamp;
+        moveSnake();
+      }
+      animationRef.current = window.requestAnimationFrame(animate);
+    }
+    animationRef.current = window.requestAnimationFrame(animate);
 
-    return () => { timerRef && clearInterval(timerRef.current!) } //cleanup clear timer if any
+    return () => { animationRef.current && window.cancelAnimationFrame(animationRef.current) };
+
+    // timerRef.current = setInterval(() => {
+    //   moveSnake();
+    // }, 1000 / snakeSpeed);
+
+    // return () => { timerRef && clearInterval(timerRef.current!) } //cleanup clear timer if any
 
   }, [gameState, snakeMoveDirection, snakePos])
 
@@ -273,30 +286,39 @@ export default function GameArea(props: GameAreaProps) {
 
   const _setSnakeMoveDirection = (event: KeyboardEvent): void => {
     switch (event.key) {
-      case 'ArrowDown':
-        if (snakeMoveDirection !== 'ArrowUp') {
-          // setSnakeMoveDirection('ArrowDown');
-          DIRECTION_BUFFER.push('ArrowDown')
+      case 'ArrowDown': {
+          if (snakeMoveDirection !== 'ArrowUp'){
+            // setSnakeMoveDirection('ArrowDown');
+            DIRECTION_BUFFER.push('ArrowDown')
+          }   
+          break;
         }
-        break;
-      case 'ArrowLeft':
-        if (snakeMoveDirection !== 'ArrowRight') {
-          // setSnakeMoveDirection('ArrowLeft');
-          DIRECTION_BUFFER.push('ArrowLeft')
+      case 'ArrowLeft': {
+          if (snakeMoveDirection !== 'ArrowRight'){
+            // setSnakeMoveDirection('ArrowLeft');
+            DIRECTION_BUFFER.push('ArrowLeft')
+          }
+
+          break;
         }
-        break;
-      case 'ArrowUp':
-        if (snakeMoveDirection !== 'ArrowDown') {
-          // setSnakeMoveDirection('ArrowUp');
-          DIRECTION_BUFFER.push('ArrowUp')
+      case 'ArrowUp': {
+          if (snakeMoveDirection !== 'ArrowDown'){
+            // setSnakeMoveDirection('ArrowUp');
+            DIRECTION_BUFFER.push('ArrowUp')
+          }
+          break;
         }
-        break;
-      case 'ArrowRight':
-        if (snakeMoveDirection !== 'ArrowLeft') {
-          // setSnakeMoveDirection('ArrowRight');
-          DIRECTION_BUFFER.push('ArrowRight')
+      case 'ArrowRight': {
+          if (snakeMoveDirection !== 'ArrowLeft'){
+            // setSnakeMoveDirection('ArrowRight');
+            DIRECTION_BUFFER.push('ArrowRight')
+          }
+          break;
         }
+      case ' ': {
+        updateGameState(!gameState);
         break;
+      }
       default:
         break;
     }
@@ -305,12 +327,14 @@ export default function GameArea(props: GameAreaProps) {
   }
 
   return (
-    <div className="gamearea-container" style={{
-      width: `${WIDTH}px`,
-      height: `${HEIGHT}px`,
-    }}>
-      <canvas className="gameboard" ref={canvasRef} style={{ background: BOARD_BACKGROUND_COLOR }} width={WIDTH} height={HEIGHT}></canvas>
-    </div>
+    <>
+      <div className="gamearea-container" style={{
+        width: `${WIDTH}px`,
+        height: `${HEIGHT}px`,
+      }}>
+        <canvas className="gameboard" ref={canvasRef} style={{ background: BOARD_BACKGROUND_COLOR }} width={WIDTH} height={HEIGHT}></canvas>
+      </div>
+    </>
   )
 }
 
